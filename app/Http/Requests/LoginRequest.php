@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -33,19 +34,6 @@ class LoginRequest extends FormRequest
         ];
     }
 
-    protected function prepareForValidation()
-    {
-        $this->merge([
-            'remember' => $this->getRemember()
-        ]);
-    }
-
-    public function getRemember()
-    {
-        $remember = $this->input('remember');
-        return $remember and $remember === 'on';
-    }
-
     public function getCredentials()
     {
         return [
@@ -57,7 +45,8 @@ class LoginRequest extends FormRequest
     public function authenticate()
     {
         $this->checkThrottle();
-        if (!Auth::attempt($this->getCredentials(), $this->input('remember', false))) {
+        $user = User::where('email', $this->getCredentials()['email'])->first();
+        if(!$user || !\Hash::check($this->getCredentials()['password'], $user->password)) {
             RateLimiter::hit($this->limiterKey());
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
@@ -68,11 +57,11 @@ class LoginRequest extends FormRequest
 
         RateLimiter::clear($this->limiterKey());
 
-        $token = $this->user()->createToken('myApiToken')->plainTextToken;
+        $token = $user->createToken('myApiToken')->plainTextToken;
 
         return [
-            $token,
-            $this->user()
+            'token' => $token,
+            'user' => $user
         ];
     }
 

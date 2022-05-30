@@ -1,7 +1,6 @@
 import {useState} from "react";
 import Transport from "../../transport";
-
-const api = new Transport()
+import {useAuth} from "../context/authContext";
 
 export default function UdAddList(
     {
@@ -13,7 +12,8 @@ export default function UdAddList(
         id
     }
 ) {
-
+    const auth = useAuth()
+    const api = new Transport(auth.token)
     const [record, setRecord] = useState('')
 
     function handleAddRecord() {

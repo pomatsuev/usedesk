@@ -1,14 +1,16 @@
 import React, {useEffect, useState} from "react";
-import UdHeader from "./ud-header/ud-header";
-import UdList from "./ud-list/ud-list";
-import {STAGES} from "../consts";
 import UdCreateForm from "./ud-create-form/ud-create-form";
 import Transport from "../transport";
-
-const api = new Transport()
+import { useAuth} from "./context/authContext";
+import { Route, Routes, useNavigate} from "react-router-dom";
+import UdPrivateRoute from "./ud-private-route/ud-private-route";
+import UdLogin from "./ud-login/ud-login";
+import UdHomePage from "./ud-home-page/ud-home-page";
 
 export default function App() {
-    const [ stage, setStage ] = useState(STAGES.SEARCH);
+    const navigate = useNavigate()
+    const auth = useAuth()
+    const api = new Transport(auth.token)
     const [ contragents, setContragents ] = useState([]);
     const [ selected, setSelected ] = useState(null);
     const [ filters, setFilters ] = useState({
@@ -25,7 +27,7 @@ export default function App() {
 
     function handleSelectContragent(contragent) {
         setSelected(contragent);
-        setStage(STAGES.EDIT);
+        navigate('/edit');
     }
 
     function handleDelete(contragentId) {
@@ -35,48 +37,49 @@ export default function App() {
                     return old.filter(contr => contr.id !== contragentId)
                 })
             })
-    }
-
-    let window = null;
-
-    if(stage === STAGES.SEARCH) {
-        window = <>
-            <UdHeader
-                search={search}
-                edit={setSearch}
-                filters={filters}
-                setFilters={setFilters}
-                changeStage={setStage}
-            />
-            <div className='mt-4'>
-                <UdList
-                    list={contragents}
-                    onSelect={handleSelectContragent}
-                    onDelete={handleDelete}
-                />
-            </div>
-        </>
-    } else if(stage === STAGES.CREATE) {
-        window = <UdCreateForm
-            changeStage={setStage}
-            createdContragent={createdContragent}
-        />
-    } else {
-        window = <UdCreateForm
-            changeStage={setStage}
-            isEdit={true}
-            contragent={selected}
-        />
+            .catch(err => {
+                alert(err.toString())
+            })
     }
 
     useEffect(() => {
-        if(stage !== STAGES.SEARCH) return;
-        api.apiGetContragents(filters, search).then(contragents => {
-            setContragents(contragents);
-        })
-    }, [stage, filters, search])
+        api.apiGetContragents(filters, search)
+            .then(contragents => {
+                setContragents(contragents);
+            })
+    }, [filters, search])
 
     return <div className="container">
-        { window }
-    </div>
+                <Routes>
+                    <Route path="/" element={
+                        <UdHomePage
+                            search={search}
+                            setSearch={setSearch}
+                            filters={filters}
+                            setFilters={setFilters}
+                            contragents={contragents}
+                            selectContragent={handleSelectContragent}
+                            deleteItem={handleDelete}
+                        />
+                    } />
+                    <Route path="/add" element={
+                        <UdPrivateRoute>
+                            <UdCreateForm
+                                createdContragent={createdContragent}
+                            />
+                        </UdPrivateRoute>
+                    } />
+                    <Route path='/edit' element={
+                        <UdPrivateRoute>
+                            <UdCreateForm
+                                isEdit={true}
+                                contragent={selected}
+                            />
+                        </UdPrivateRoute>
+                    } />
+                    <Route path="/login" element={
+                        <UdLogin />
+                    } />
+                </Routes>
+            </div>
 }

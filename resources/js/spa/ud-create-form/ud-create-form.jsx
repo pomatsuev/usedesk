@@ -2,10 +2,14 @@ import {createRef, useMemo, useState} from "react";
 import Transport from "../../transport";
 import {STAGES} from "../../consts";
 import UdAddList from "../ud-add-list/ud-add-list";
+import {Link, useNavigate} from "react-router-dom";
+import {useAuth} from "../context/authContext";
 
-const api = new Transport();
+export default function UdCreateForm({ isEdit, contragent, createdContragent }) {
 
-export default function UdCreateForm({ isEdit, contragent,  changeStage, createdContragent }) {
+    const auth = useAuth()
+    const api = new Transport(auth.token);
+    const navigate = useNavigate();
 
     const [form, setForm] = useState({
         name: isEdit ? contragent.name : '',
@@ -35,18 +39,16 @@ export default function UdCreateForm({ isEdit, contragent,  changeStage, created
         if(!isEdit) {
             api.apiSaveContragent(form)
                 .then(apiContragent => {
-                    handleCancel()
+                    createdContragent(apiContragent)
+                    navigate('/')
                 })
         } else {
             api.apiUpdateContragent(id, form)
                 .then(apiContragent => {
-                    handleCancel()
+                    createdContragent(apiContragent)
+                    navigate('/')
                 })
         }
-    }
-
-    function handleCancel() {
-        changeStage(STAGES.SEARCH);
     }
 
     function handlePhone(action, phone) {
@@ -152,13 +154,9 @@ export default function UdCreateForm({ isEdit, contragent,  changeStage, created
                     updateForm={handleEmail}
                 />
             </div>
-            <button
-                type='button'
-                className='btn btn-secondary'
-                onClick={handleCancel}
-            >
+            <Link to='/' className='btn btn-secondary'>
                 Отменить
-            </button>
+            </Link>
             <button
                 type="button"
                 className="btn btn-primary mx-2"

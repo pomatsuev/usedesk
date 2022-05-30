@@ -1,4 +1,9 @@
+import {useAuth} from "../context/authContext";
+
 export default function UdList({ list, onSelect, onDelete }) {
+
+    const auth = useAuth()
+
     function deleteContragent(id, evt) {
         onDelete(id)
         evt.stopPropagation()
@@ -16,12 +21,14 @@ export default function UdList({ list, onSelect, onDelete }) {
                         <h4>
                             { `${contragent.name} ${contragent.surname}` }
                         </h4>
-                        <button
-                            className='btn btn-close'
-                            onClick={
-                                evt => deleteContragent(contragent.id, evt)
-                            }
-                        />
+                        {
+                            auth.logged && <button
+                                className='btn btn-close'
+                                onClick={
+                                    evt => deleteContragent(contragent.id, evt)
+                                }
+                            />
+                        }
                     </div>
                     <div>
                         <small className='text-muted'>

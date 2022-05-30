@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ContragentsController;
+use App\Http\Controllers\Api\LoginController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,11 +21,18 @@ use Illuminate\Support\Facades\Route;
 //});
 
 Route::get('/contragents', [ContragentsController::class, 'index']);
-Route::post('/contragent', [ContragentsController::class, 'store']);
-Route::put('/contragent/{contragent}', [ContragentsController::class, 'update']);
-Route::post(
-    '/contragent/{contragent}/attach',
-    [ContragentsController::class, 'addRelationObject']
-);
-Route::post('/delete-attach', [ContragentsController::class, 'destroyRelationObject']);
-Route::delete('/contragent/{contragent}', [ContragentsController::class, 'destroy']);
+Route::post('/login', [LoginController::class, 'login']);
+
+Route::group(['middleware' => 'auth:sanctum'], function () {
+    Route::post('/contragent', [ContragentsController::class, 'store']);
+    Route::put('/contragent/{contragent}', [ContragentsController::class, 'update']);
+    Route::post(
+        '/contragent/{contragent}/attach',
+        [ContragentsController::class, 'addRelationObject']
+    );
+    Route::post('/delete-attach', [ContragentsController::class, 'destroyRelationObject']);
+    Route::delete('/contragent/{contragent}', [ContragentsController::class, 'destroy']);
+    Route::post('/logut', [LoginController::class, 'logout']);
+    Route::get('/user', [LoginController::class, 'userInfo']);
+});
+

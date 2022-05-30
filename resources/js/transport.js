@@ -9,7 +9,28 @@ const filtersMap = {
     email: (arr) => [...arr, 'email'],
 }
 
+function withToken(token) {
+    return {
+        'Authorization': 'Bearer ' + token
+    }
+}
 export default class Transport {
+
+    constructor(token) {
+        if(!token) return
+        this.setToken(token)
+    }
+
+    setToken(token) {
+        axios.defaults.headers = withToken(token)
+    }
+
+    apiGetUserByToken(token) {
+        return axios.get('/user', {
+            headers: withToken(token)
+        }).then(({data}) => data)
+    }
+
     apiSaveContragent(contragent) {
         return axios.post('/contragent', contragent).then(({data}) => data)
     }
@@ -52,5 +73,9 @@ export default class Transport {
 
     apiDeleteContragent(contragentId) {
         return axios.delete('/contragent/' + contragentId);
+    }
+
+    apiLogin(credentials) {
+        return axios.post('/login', credentials).then(({data}) => data)
     }
 }

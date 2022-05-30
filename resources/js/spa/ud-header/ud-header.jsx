@@ -1,39 +1,32 @@
-import {STAGES} from "../../consts";
+import {Link} from "react-router-dom";
 
-export default function UdHeader({ search, edit, filters, setFilters, changeStage }) {
+export default function UdHeader({ search, edit, filters, setFilters }) {
 
     function changeInput(name) {
         setFilters(old => ({...old, [name]: !old[name]}))
     }
 
-    function handleCreateClick() {
-        changeStage(STAGES.CREATE)
-    }
-
     return <section>
         <h1 className='mt-4'>
-            Contragents:
-            <button
-                className='btn btn-outline-secondary mx-2'
-                onClick={handleCreateClick}
-            >
-                +
-            </button>
+            Контрагенты:
         </h1>
         <div className='row mt-4'>
             <div className="col-9">
                 <input
                     type='text'
                     className='form-control'
-                    placeholder='enter search phrase'
+                    placeholder='Введите текст для поиска'
                     value={search}
                     onChange={event => edit(event.target.value)}
                 />
             </div>
             <div className="col-3">
-                <button type='button' className='btn btn-primary'>
-                    create contragent
-                </button>
+                <Link
+                    to="/add"
+                    className='btn btn-primary'
+                >
+                    Создать контрагента
+                </Link>
             </div>
         </div>
         <div className="form-check form-check-inline mt-4">
